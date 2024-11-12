@@ -63,114 +63,109 @@ def draw_skeleton(img, hand_landmarks):
 
 def main():
     cap = cv2.VideoCapture(0)
-    canvas = np.zeros((480, 640, 3), dtype=np.uint8)
     hands = create_hand_tracker()
+    frame_count = 0  # Initialize frame count for image filenames
 
-    # Initialize a counter for frames captured
-    frame_count = 0
-    target_frames = 120  # Set the target number of frames to capture
+    while True:
+        canvas = np.zeros((480, 640, 3), dtype=np.uint8)
+        overlapped_image = np.zeros((480, 640, 3), dtype=np.uint8)
 
-    # Create an empty image to accumulate the overlapping frames
-    overlapped_image = np.zeros((480, 640, 3), dtype=np.uint8)
+        finger_points = {
+            'l_thumb': deque(maxlen=64),
+            'l_index': deque(maxlen=64),
+            'l_middle': deque(maxlen=64),
+            'l_ring': deque(maxlen=64),
+            'l_pinky': deque(maxlen=64),
+            'r_thumb': deque(maxlen=64),
+            'r_index': deque(maxlen=64),
+            'r_middle': deque(maxlen=64),
+            'r_ring': deque(maxlen=64),
+            'r_pinky': deque(maxlen=64)
+        }
 
-    finger_points = {
-        'l_thumb': deque(maxlen=64),
-        'l_index': deque(maxlen=64),
-        'l_middle': deque(maxlen=64),
-        'l_ring': deque(maxlen=64),
-        'l_pinky': deque(maxlen=64),
-        'r_thumb': deque(maxlen=64),
-        'r_index': deque(maxlen=64),
-        'r_middle': deque(maxlen=64),
-        'r_ring': deque(maxlen=64),
-        'r_pinky': deque(maxlen=64)
-    }
+        fingers_colors = {
+            'l_thumb': 'red',
+            'l_index': 'lime',
+            'l_middle': 'blue',
+            'l_ring': 'yellow',
+            'l_pinky': 'deeppink',
+            'r_thumb': 'lightskyblue',
+            'r_index': 'darksalmon',
+            'r_middle': 'lightgreen',
+            'r_ring': 'gold',
+            'r_pinky': 'darkviolet'
+        }
 
-    fingers_colors = {
-        'l_thumb': 'red',
-        'l_index': 'lime',
-        'l_middle': 'blue',
-        'l_ring': 'yellow',
-        'l_pinky': 'deeppink',
-        'r_thumb': 'lightskyblue',
-        'r_index': 'darksalmon',
-        'r_middle': 'lightgreen',
-        'r_ring': 'gold',
-        'r_pinky': 'darkviolet'
-    }
+        finger_colors_bgr = {k: rgb_to_bgr(v) for k, v in fingers_colors.items()}
 
-    finger_colors_bgr = {k: rgb_to_bgr(v) for k, v in fingers_colors.items()}
+        finger_indices = {
+            'thumb': 4,
+            'index': 8,
+            'middle': 12,
+            'ring': 16,
+            'pinky': 20
+        }
 
-    finger_indices = {
-        'thumb': 4,
-        'index': 8,
-        'middle': 12,
-        'ring': 16,
-        'pinky': 20
-    }
+        # Capture 120 frames
+        for _ in range(60):
+            ret, frame = cap.read()
+            if not ret:
+                break
 
-    while frame_count < target_frames:
-        ret, frame = cap.read()
-        if not ret:
-            break
+            frame = cv2.flip(frame, 1)
+            display = np.zeros_like(frame)
 
-        # Increment the frame counter
-        frame_count += 1
-        
-        # Skip even-numbered frames
-        if frame_count % 2 == 0:
-            continue
+            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            results = hands.process(rgb_frame)
 
-        frame = cv2.flip(frame, 1)
-        display = np.zeros_like(frame)
+            if results.multi_hand_landmarks:
+                for hand_idx, hand_landmarks in enumerate(results.multi_hand_landmarks):
+                    handedness = results.multi_handedness[hand_idx].classification[0].label.lower()
+                    prefix = 'l_' if handedness == 'left' else 'r_'
 
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = hands.process(rgb_frame)
+                    # Track and draw finger tips
+                    for finger, tip_idx in finger_indices.items():
+                        finger_name = f"{prefix}{finger}"
+                        color = finger_colors_bgr[finger_name]
 
+                        # Get fingertip coordinates
+                        tip = hand_landmarks.landmark[tip_idx]
+                        x = int(tip.x * frame.shape[1])
+                        y = int(tip.y * frame.shape[0])
+
+                        # Add point to corresponding finger's deque
+                        finger_points[finger_name].appendleft((x, y))
+
+                        # Draw glowing circle at fingertip
+                        display = draw_glowing_circle(display, (x, y), color)
+
+            # Apply fade effect to canvas
+            canvas = cv2.multiply(canvas, 0.95)
+
+            # Combine canvas with finger tips display
+            result = cv2.addWeighted(display, 1, canvas, 0.7, 0)
+
+            # Accumulate the result for overlapping
+            overlapped_image = cv2.add(overlapped_image, result)
+
+            cv2.imshow('Finger Tips Tracker', result)
+
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord('q'):
+                cap.release()
+                cv2.destroyAllWindows()
+                return
+
+        # Draw the skeleton for the last captured frame
         if results.multi_hand_landmarks:
-            for hand_idx, hand_landmarks in enumerate(results.multi_hand_landmarks):
-                handedness = results.multi_handedness[hand_idx].classification[0].label.lower()
-                prefix = 'l_' if handedness == 'left' else 'r_'
+            for hand_landmarks in results.multi_hand_landmarks:
+                draw_skeleton(overlapped_image, hand_landmarks)
 
-                # Track and draw finger tips
-                for finger, tip_idx in finger_indices.items():
-                    finger_name = f"{prefix}{finger}"
-                    color = finger_colors_bgr[finger_name]
-
-                    # Get fingertip coordinates
-                    tip = hand_landmarks.landmark[tip_idx]
-                    x = int(tip.x * frame.shape[1])
-                    y = int(tip.y * frame.shape[0])
-
-                    # Add point to corresponding finger's deque
-                    finger_points[finger_name].appendleft((x, y))
-
-                    # Draw glowing circle at fingertip
-                    display = draw_glowing_circle(display, (x, y), color)
-
-        # Apply fade effect to canvas
-        canvas = cv2.multiply(canvas, 0.95)
-
-        # Combine canvas with finger tips display
-        result = cv2.addWeighted(display, 1, canvas, 0.7, 0)
-
-        # Accumulate the result for overlapping
-        overlapped_image = cv2.add(overlapped_image, result)
-
-        cv2.imshow('Finger Tips Tracker', result)
-
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'):
-            break
-
-    # Draw the skeleton for the last captured frame
-    if results.multi_hand_landmarks:
-        for hand_landmarks in results.multi_hand_landmarks:
-            draw_skeleton(overlapped_image, hand_landmarks)
-
-    # Display the overlapped image after capturing frames with skeleton
-    cv2.imshow('Overlapped Image', overlapped_image)
-    cv2.waitKey(0)  # Wait indefinitely until a key is pressed
+        # Save the overlapped image
+        filename = f'overlapped_image_{frame_count}.png'
+        cv2.imwrite(filename, overlapped_image)
+        print(f"Saved: {filename}")
+        frame_count += 1
 
     cap.release()
     cv2.destroyAllWindows()

@@ -50,7 +50,7 @@ if __name__ == '__main__':
             num_workers=0  # Set num_workers to 0 to avoid multiprocessing issues on Windows
         )
         data.show_batch(max_n=9, figsize=(7, 6))
-        #plt.show()  # Keeps the plot visible until manually closed
+        #plt.show()  # makes the plot visible
         return data
 
     # Create and display dataset

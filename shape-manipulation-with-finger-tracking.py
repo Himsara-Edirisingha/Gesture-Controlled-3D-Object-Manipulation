@@ -118,7 +118,8 @@ new_objects = []
 fingertip_x = None
 fingertip_y = None
 sensitivity = 5
-# Game loop
+
+# loop
 running = True
 while running:
     mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -143,8 +144,7 @@ while running:
                     screen_x, screen_y, _ = node.draw(screen, zoom, offset_x, offset_y, rotation_matrices, False, dissected)
                     if abs(fingertip_x - screen_x) < sensitivity and abs(fingertip_y - screen_y) < sensitivity and dissection_mode:
                         node.isOnDissectionPath = True
-    
-                
+                   
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -210,7 +210,7 @@ while running:
         cube.draw(screen, zoom, offset_x, offset_y, rotation_matrices, dissection_mode, mouse_x, mouse_y, dissected)
 
     if fingertip_x is not None and fingertip_y is not None:
-            pygame.draw.circle(screen, (255, 0, 0), (fingertip_x, fingertip_y), 2)  # Red circle for fingertip
+            pygame.draw.circle(screen, (255, 0, 0), (fingertip_x, fingertip_y), 2)  # fingertip view
             fingertip_x = None
             fingertip_y = None
 

@@ -199,7 +199,7 @@ while running:
     ])
     rotation_matrices = [rotation_matrix_x, rotation_matrix_y, rotation_matrix_z]
 
-    screen.fill((30, 30, 30))  # Dark background for contrast
+    screen.fill((200, 200, 200))  # Dark background for contrast
 
     if dissected:
         draw_group_with_hull(screen, new_objects[0], zoom, offset_x - width // 4, offset_y, rotation_matrices)
@@ -213,7 +213,6 @@ while running:
             pygame.draw.circle(screen, (255, 0, 0), (fingertip_x, fingertip_y), 2)  # Red circle for fingertip
             fingertip_x = None
             fingertip_y = None
-
 
     pygame.display.flip()
 

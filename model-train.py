@@ -13,7 +13,7 @@ if __name__ == '__main__':
     # Set environment variables for CUDA
     os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
     os.environ['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
-    os.environ['CUDA_LAUNCH_BLOCKING'] = '1'  # Helps with debugging CUDA errors
+    os.environ['CUDA_LAUNCH_BLOCKING'] = '1'  # Helps with debugging CUDA errors (from you tube)
 
     # Set random seeds for reproducibility
     torch.manual_seed(2)

@@ -1,6 +1,12 @@
 import pygame
 import numpy as np
 from scipy.spatial import ConvexHull
+import mediapipe as mp
+import cv2
+
+mp_hands = mp.solutions.hands
+hands = mp_hands.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.7)
+cap = cv2.VideoCapture(0) 
 
 # Initialize Pygame
 pygame.init()
@@ -109,11 +115,37 @@ dragging = False
 dissection_mode = False
 dissected = False
 new_objects = []
-
+fingertip_x = None
+fingertip_y = None
+sensitivity = 5
 # Game loop
 running = True
 while running:
     mouse_x, mouse_y = pygame.mouse.get_pos()
+    success, frame = cap.read()
+    if success:
+        frame = cv2.flip(frame, 1)  # Flip for natural interaction
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        result = hands.process(rgb_frame)
+
+        if result.multi_hand_landmarks:
+            # Extract fingertip coordinates
+            for hand_landmarks in result.multi_hand_landmarks:
+                index_finger_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
+                fingertip_x = int(index_finger_tip.x * width)
+                fingertip_y = int(index_finger_tip.y * height)
+
+                # Draw fingertip position on Pygame screen for reference
+                pygame.draw.circle(screen, (255, 0, 0), (fingertip_x, fingertip_y), sensitivity)
+
+                # Map fingertip to 3D cube
+                for node in cube.nodes:
+                    screen_x, screen_y, _ = node.draw(screen, zoom, offset_x, offset_y, rotation_matrices, False, dissected)
+                    if abs(fingertip_x - screen_x) < sensitivity and abs(fingertip_y - screen_y) < sensitivity and dissection_mode:
+                        node.isOnDissectionPath = True
+    
+                
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -172,9 +204,20 @@ while running:
     if dissected:
         draw_group_with_hull(screen, new_objects[0], zoom, offset_x - width // 4, offset_y, rotation_matrices)
         draw_group_with_hull(screen, new_objects[1], zoom, offset_x + width // 4, offset_y, rotation_matrices)
+        fingertip_x = None
+        fingertip_y = None
     else:
         cube.draw(screen, zoom, offset_x, offset_y, rotation_matrices, dissection_mode, mouse_x, mouse_y, dissected)
 
+    if fingertip_x is not None and fingertip_y is not None:
+            pygame.draw.circle(screen, (255, 0, 0), (fingertip_x, fingertip_y), 2)  # Red circle for fingertip
+            fingertip_x = None
+            fingertip_y = None
+
+
     pygame.display.flip()
+
+cap.release()
+hands.close()
 
 pygame.quit()

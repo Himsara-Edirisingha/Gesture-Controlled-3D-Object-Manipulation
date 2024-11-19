@@ -78,6 +78,13 @@ def display_value():
             print(f"Current value: {prediction}")
         time.sleep(3)  
 
+def preprocess_image(image):
+    default_size = (1080, 1920)
+    img_size = [int(x / 2) for x in default_size]
+    resized_image = cv2.resize(image, default_size)
+    rgb_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2RGB)
+    pil_image = PILImage.create(rgb_image)
+    return pil_image
 
 def predict():
     global prediction
@@ -125,7 +132,7 @@ def predict():
             'pinky': 20
         }
 
-        for _ in range(90):
+        for _ in range(120):
             ret, frame = cap.read()
             if not ret:
                 break
@@ -172,13 +179,17 @@ def predict():
                 draw_skeleton(overlapped_image, hand_landmarks)
         frame_count += 1
         #img = PILImage.create('20200218-162449.550347-Rotating.png')
-        img = overlapped_image
+        #img = overlapped_image
+        img = preprocess_image(overlapped_image)
         pred, pred_idx, probs = learn.predict(img)
         print(f"Prediction: {pred}, Probability: {probs[pred_idx]:.4f}")
-        with prediction_lock:
-            prediction =pred
-            print(f"Value updated to: {prediction}")
-        #time.sleep(1)  
+        if probs[pred_idx] > 0.5:
+            with prediction_lock:
+                prediction =pred
+                print(f"Value updated to: {prediction}")
+                time.sleep(2)  
+        else:
+            print(f"Low Confidance value wont be updated")
     
 
 prediction_thread = threading.Thread(target=predict)
@@ -186,7 +197,8 @@ prediction_thread = threading.Thread(target=predict)
 
 prediction_thread.start()
 #display_thread.start()
-
 prediction_thread.join()
+
+
 #display_thread.join()
 #Catching-Hands-Up

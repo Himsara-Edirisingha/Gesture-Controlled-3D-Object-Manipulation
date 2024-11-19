@@ -177,20 +177,15 @@ def main():
 
         # Load the captured image and make a prediction
         #img = PILImage.create(overlapped_image)
-        img = PILImage.create('20200218-162449.550347-Rotating.png')
-        #img=overlapped_image
+        #img = PILImage.create('20200218-162449.550347-Rotating.png')
+        img=overlapped_image
         pred, pred_idx, probs = learn.predict(img)
-        filename = f'overlapped_image_{frame_count}_{pred}.png'
-        cv2.imwrite(filename, overlapped_image)
-        print(f"Saved: {filename}")
+        #filename = f'overlapped_image_{frame_count}_{pred}.png'
+        #cv2.imwrite(filename, overlapped_image)
+        #print(f"Saved: {filename}")
 
         # Print the prediction result
         print(f"Prediction: {pred}, Probability: {probs[pred_idx]:.4f}")
-
-        # Show the captured image with the prediction result
-        #img.show()
-        #plt.title(f"Prediction: {pred} ({probs[pred_idx]:.4f})")
-        #plt.show()
 
     cap.release()
     cv2.destroyAllWindows()

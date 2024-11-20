@@ -125,7 +125,7 @@ def predict():
             'pinky': 20
         }
 
-        for _ in range(90):
+        for _ in range(60):
             ret, frame = cap.read()
             if not ret:
                 break

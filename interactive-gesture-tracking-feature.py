@@ -171,7 +171,7 @@ def display_value():
     # Initialize Pygame
     pygame.init()
     # Screen dimensions
-    width, height = 1000, 1000
+    width, height = 1000, 600
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption("Interactive 3D cube Manipulation")
 

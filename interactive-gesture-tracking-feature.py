@@ -196,6 +196,23 @@ def display_value():
     while running:
         mouse_x, mouse_y = pygame.mouse.get_pos()
         success, frame = cap.read()
+        rotation_matrix_x = np.array([
+                [1, 0, 0],
+                [0, np.cos(rotation_x), -np.sin(rotation_x)],
+                [0, np.sin(rotation_x), np.cos(rotation_x)]
+                ])
+        rotation_matrix_y = np.array([
+                [np.cos(rotation_y), 0, np.sin(rotation_y)],
+                [0, 1, 0],
+                [-np.sin(rotation_y), 0, np.cos(rotation_y)]
+                ])
+        rotation_matrix_z = np.array([
+                [np.cos(rotation_z), -np.sin(rotation_z), 0],
+                [np.sin(rotation_z), np.cos(rotation_z), 0],
+                [0, 0, 1]
+                ])
+        rotation_matrices = [rotation_matrix_x, rotation_matrix_y, rotation_matrix_z]
+
         if success:
             frame = cv2.flip(frame, 1)  # Flip for avoid lateral inversion
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -217,22 +234,7 @@ def display_value():
                         if abs(fingertip_x - screen_x) < sensitivity and abs(fingertip_y - screen_y) < sensitivity and dissection_mode:
                             node.isOnDissectionPath = True
 
-        rotation_matrix_x = np.array([
-                [1, 0, 0],
-                [0, np.cos(rotation_x), -np.sin(rotation_x)],
-                [0, np.sin(rotation_x), np.cos(rotation_x)]
-                ])
-        rotation_matrix_y = np.array([
-                [np.cos(rotation_y), 0, np.sin(rotation_y)],
-                [0, 1, 0],
-                [-np.sin(rotation_y), 0, np.cos(rotation_y)]
-                ])
-        rotation_matrix_z = np.array([
-                [np.cos(rotation_z), -np.sin(rotation_z), 0],
-                [np.sin(rotation_z), np.cos(rotation_z), 0],
-                [0, 0, 1]
-                ])
-        rotation_matrices = [rotation_matrix_x, rotation_matrix_y, rotation_matrix_z]
+        
 
         with prediction_lock:
             #print(f"Value updated to on desplay thread: {prediction}")
@@ -302,13 +304,14 @@ def display_value():
                     offset_x += dx
                     offset_y += dy
 
-            screen.fill((200, 200, 200))  # Dark background for contrast
+            screen.fill((200, 200, 200))  # background 
 
             if dissected:
                 draw_group_with_hull(screen, new_objects[0], zoom, offset_x - width // 4, offset_y, rotation_matrices)
                 draw_group_with_hull(screen, new_objects[1], zoom, offset_x + width // 4, offset_y, rotation_matrices)
                 fingertip_x = None
                 fingertip_y = None
+                
             else:
                 cube.draw(screen, zoom, offset_x, offset_y, rotation_matrices, dissection_mode, mouse_x, mouse_y, dissected)
 

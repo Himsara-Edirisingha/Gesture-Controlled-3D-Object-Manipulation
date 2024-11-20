@@ -20,11 +20,11 @@ cap = cv2.VideoCapture(0)
 light_positions = [
     np.array([0, -500, 0]),  # Light from front
     np.array([0, 500, 0]),   # Light from behind
-    np.array([-500, 500, 500])  # Light from top-left
+    #np.array([-500, 500, 500])  # Light from top-left
 ]
 
 class Node:
-    def __init__(self, position, size=5, color=(128, 128, 128)):
+    def __init__(self, position, size=8, color=(128, 128, 128)):
         self.position = position  # Position as a numpy array
         self.size = size          # Size of the node
         self.default_color = color  # Store default color
@@ -94,10 +94,10 @@ def draw_group_with_hull(screen, group, zoom, offset_x, offset_y, rotation_matri
     positions[:, 0] = positions[:, 0] * zoom + offset_x
     positions[:, 1] = positions[:, 1] * zoom + offset_y
 
-    if len(positions) > 3:
-        hull = ConvexHull(positions)
-        hull_points = positions[hull.vertices]
-        pygame.draw.aalines(screen, (50, 150, 255), True, hull_points)  # Light blue outline
+    # if len(positions) > 3:
+    #     hull = ConvexHull(positions)
+    #     hull_points = positions[hull.vertices]
+    #     pygame.draw.aalines(screen, (50, 150, 255), True, hull_points)  # Light blue outline
 
     for node in group:
         node.draw(screen, zoom, offset_x, offset_y, rotation_matrices, False, True)
@@ -171,17 +171,18 @@ def display_value():
     # Initialize Pygame
     pygame.init()
     # Screen dimensions
-    width, height = 800, 600
+    width, height = 1000, 1000
     screen = pygame.display.set_mode((width, height))
-    pygame.display.set_caption("Interactive Node Cube with Enhanced Rendering")
+    pygame.display.set_caption("Interactive 3D cube Manipulation")
 
     # Cube dimensions
-    cube_width, cube_height, cube_length = 15, 15, 15
+    cube_width, cube_height, cube_length = 10, 12, 8
     cube = Cube(cube_width, cube_height, cube_length)
 
+    PREDICTION_EVENT = pygame.USEREVENT + 1 
     # Rotation angles, zoom level, and flags
     rotation_x, rotation_y, rotation_z = 0, 0, 0
-    zoom = 20
+    zoom = 10
     offset_x, offset_y = width // 2, height // 2
     dragging = False
     dissection_mode = False
@@ -196,7 +197,7 @@ def display_value():
         mouse_x, mouse_y = pygame.mouse.get_pos()
         success, frame = cap.read()
         if success:
-            frame = cv2.flip(frame, 1)  # Flip for natural interaction
+            frame = cv2.flip(frame, 1)  # Flip for avoid lateral inversion
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             result = hands.process(rgb_frame)
 
@@ -215,6 +216,55 @@ def display_value():
                         screen_x, screen_y, _ = node.draw(screen, zoom, offset_x, offset_y, rotation_matrices, False, dissected)
                         if abs(fingertip_x - screen_x) < sensitivity and abs(fingertip_y - screen_y) < sensitivity and dissection_mode:
                             node.isOnDissectionPath = True
+
+        rotation_matrix_x = np.array([
+                [1, 0, 0],
+                [0, np.cos(rotation_x), -np.sin(rotation_x)],
+                [0, np.sin(rotation_x), np.cos(rotation_x)]
+                ])
+        rotation_matrix_y = np.array([
+                [np.cos(rotation_y), 0, np.sin(rotation_y)],
+                [0, 1, 0],
+                [-np.sin(rotation_y), 0, np.cos(rotation_y)]
+                ])
+        rotation_matrix_z = np.array([
+                [np.cos(rotation_z), -np.sin(rotation_z), 0],
+                [np.sin(rotation_z), np.cos(rotation_z), 0],
+                [0, 0, 1]
+                ])
+        rotation_matrices = [rotation_matrix_x, rotation_matrix_y, rotation_matrix_z]
+
+        with prediction_lock:
+            #print(f"Value updated to on desplay thread: {prediction}")
+            #Pointing
+            if prediction == 'Blank':
+                 zoom = min(10, zoom + 2)  
+                 prediction = None          
+            elif prediction == 'Resting':
+                prediction = None
+            elif prediction == 'Rotating':
+                for x in range(6):
+                    rotation_x += 0.001 
+            elif prediction == 'Pointing-With-Hand-Raised':
+                for x in range(6):
+                    rotation_y += 0.001 
+            elif prediction == 'Catching-Hands-Up':
+                for x in range(6):
+                    rotation_z -= 0.001 
+            elif prediction == 'Pointing':
+                    #zoom = max(5, zoom - 2) 
+                    prediction = None
+            elif prediction == 'C':
+                    #zoom = max(5, zoom - 2)  
+                    prediction = None
+                    
+            pygame.event.post(pygame.event.Event(PREDICTION_EVENT))
+            #Catching-Hands-Up  
+            #Pointing-With-Hand-Raised
+            #Rotating
+            #Zoom
+            #Shaking-Raised-Fist
+            #Catching
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -251,23 +301,6 @@ def display_value():
                     dx, dy = event.rel
                     offset_x += dx
                     offset_y += dy
-
-            rotation_matrix_x = np.array([
-                [1, 0, 0],
-                [0, np.cos(rotation_x), -np.sin(rotation_x)],
-                [0, np.sin(rotation_x), np.cos(rotation_x)]
-                ])
-            rotation_matrix_y = np.array([
-                [np.cos(rotation_y), 0, np.sin(rotation_y)],
-                [0, 1, 0],
-                [-np.sin(rotation_y), 0, np.cos(rotation_y)]
-                ])
-            rotation_matrix_z = np.array([
-                [np.cos(rotation_z), -np.sin(rotation_z), 0],
-                [np.sin(rotation_z), np.cos(rotation_z), 0],
-                [0, 0, 1]
-                ])
-            rotation_matrices = [rotation_matrix_x, rotation_matrix_y, rotation_matrix_z]
 
             screen.fill((200, 200, 200))  # Dark background for contrast
 

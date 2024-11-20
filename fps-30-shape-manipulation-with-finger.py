@@ -95,10 +95,10 @@ def draw_group_with_hull(screen, group, zoom, offset_x, offset_y, rotation_matri
     positions[:, 0] = positions[:, 0] * zoom + offset_x
     positions[:, 1] = positions[:, 1] * zoom + offset_y
 
-    if len(positions) > 3:
-        hull = ConvexHull(positions)
-        hull_points = positions[hull.vertices]
-        pygame.draw.aalines(screen, (50, 150, 255), True, hull_points)  # Light blue outline
+    # if len(positions) > 3:
+    #     hull = ConvexHull(positions)
+    #     hull_points = positions[hull.vertices]
+    #     pygame.draw.aalines(screen, (50, 150, 255), True, hull_points)  # Light blue outline
 
     for node in group:
         node.draw(screen, zoom, offset_x, offset_y, rotation_matrices, False, True)

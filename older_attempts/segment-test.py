@@ -73,13 +73,13 @@ while cap.isOpened():
     # Find contours in the threshold image
     contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
-    # Filter contours based on area to ignore small noise
+    #Filter contours based on area to ignore small noise
     for contour in contours:
         if cv2.contourArea(contour) > 500:  # You can adjust the area threshold
             x, y, w, h = cv2.boundingRect(contour)
             roi = frame[y:y+h, x:x+w]  # Region of interest
             
-            # Use Mediapipe to process the region of interest if a hand is detected
+            # Mediapipe to process the region of interest if a hand is detected
             roi_rgb = cv2.cvtColor(roi, cv2.COLOR_BGR2RGB)
             result = hands.process(roi_rgb)
             
@@ -90,7 +90,7 @@ while cap.isOpened():
                     
                     # Loop through each finger
                     for finger, tip_index in finger_tips.items():
-                        # Get the coordinates of the current finger tip
+                        # Get the  current finger tip
                         tip = hand_landmarks.landmark[tip_index]
                         h, w, _ = roi.shape
                         x_tip, y_tip = int(tip.x * w), int(tip.y * h)
@@ -116,13 +116,11 @@ while cap.isOpened():
                     # Draw the landmarks on the hand
                     mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
 
-    # Combine the frame and canvas
+    #frame and canvas
     combined = cv2.addWeighted(frame, 0.5, canvas, 0.5, 0)
-
-    # Display the result
     cv2.imshow("Draw with Both Hands", combined)
     
-    # Exit if 'q' is pressed
+    # Exit key = q
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 

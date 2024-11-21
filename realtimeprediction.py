@@ -141,7 +141,7 @@ def main():
                         x = int(tip.x * frame.shape[1])
                         y = int(tip.y * frame.shape[0])
 
-                        # Add point to corresponding finger's deque
+                        # Add point to corresponding fingers deque
                         finger_points[finger_name].appendleft((x, y))
 
                         # Draw glowing circle at fingertip

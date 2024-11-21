@@ -132,16 +132,16 @@ while running:
         result = hands.process(rgb_frame)
 
         if result.multi_hand_landmarks:
-            # Extract fingertip coordinates
+            # Fingertip coordinates
             for hand_landmarks in result.multi_hand_landmarks:
                 index_finger_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
                 fingertip_x = int(index_finger_tip.x * width)
                 fingertip_y = int(index_finger_tip.y * height)
 
-                # Draw fingertip position on Pygame screen for reference
+                # Draw fingertip position
                 pygame.draw.circle(screen, (255, 0, 0), (fingertip_x, fingertip_y), sensitivity)
 
-                # Map fingertip to 3D cube
+                # Map fingertip to  cube
                 for node in cube.nodes:
                     screen_x, screen_y, _ = node.draw(screen, zoom, offset_x, offset_y, rotation_matrices, False, dissected)
                     if abs(fingertip_x - screen_x) < sensitivity and abs(fingertip_y - screen_y) < sensitivity and dissection_mode:

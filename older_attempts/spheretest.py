@@ -9,11 +9,11 @@ class VoxelObject:
         self.colors = np.empty((x_size, y_size, z_size), dtype=object)
 
     def add_voxel(self, x, y, z):
-        # Mark the voxel at the specified (x, y, z) coordinate as filled
+        # Mark the voxel at the specified x, y, z coordinate as filled
         self.grid[x, y, z] = True
 
     def add_filled_cube(self, x_start, y_start, z_start, size):
-        # Fill a cube starting from (x_start, y_start, z_start) with given size
+        # Fill a cube starting from x_start, y_start, z_start with given size
         for x in range(x_start, x_start + size):
             for y in range(y_start, y_start + size):
                 for z in range(z_start, z_start + size):
@@ -45,7 +45,7 @@ class VoxelObject:
 
 
 def main():
-    # Create a 10x10x10 grid
+    # Create a grid
     obj = VoxelObject(10, 10, 10)
 
     # Display the sphere

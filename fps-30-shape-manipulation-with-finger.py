@@ -160,21 +160,21 @@ while running:
                 dissected = True
                 print(f"Group 1 has {len(group1)} nodes, Group 2 has {len(group2)} nodes.")
             elif event.key == pygame.K_w:
-                rotation_x += 0.1  # Rotate around X-axis
+                rotation_x += 0.1  # Rotate around x
             elif event.key == pygame.K_s:
                 rotation_x -= 0.1
             elif event.key == pygame.K_a:
-                rotation_y += 0.1  # Rotate around Y-axis
+                rotation_y += 0.1  # Rotate around y
             elif event.key == pygame.K_d:
                 rotation_y -= 0.1
             elif event.key == pygame.K_q:
-                rotation_z += 0.1  # Rotate around Z-axis
+                rotation_z += 0.1  # Rotate around z
             elif event.key == pygame.K_e:
                 rotation_z -= 0.1
             elif event.key == pygame.K_UP:
                 zoom += 2  # Zoom in
             elif event.key == pygame.K_DOWN:
-                zoom = max(5, zoom - 2)  # Zoom out with a minimum limit
+                zoom = max(5, zoom - 2)  # Zoom out and minimum limit
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             dragging = True
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:

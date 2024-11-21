@@ -20,7 +20,7 @@ class VoxelObject:
                     self.add_voxel(x, y, z)
 
     def draw_sphere(self, ax, radius=5, center=(5, 5, 5)):
-        # Generate a 3D grid for the sphere
+        # 3D grid for the sphere
         u = np.linspace(0, 2 * np.pi, 100)
         v = np.linspace(0, np.pi, 100)
         x = center[0] + radius * np.outer(np.cos(u), np.sin(v))
@@ -31,24 +31,22 @@ class VoxelObject:
         ax.plot_surface(x, y, z, color='b', rstride=5, cstride=5, alpha=0.6)
 
     def display(self):
-        # Create a 3D plot for the filled object
+        # 3D plot for the filled object
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
 
         # Draw
         self.draw_sphere(ax)
 
-        # Hide the axes
+        
         ax.set_axis_off()
 
         plt.show()
 
 
 def main():
-    # Create a grid
+   
     obj = VoxelObject(10, 10, 10)
-
-    # Display the sphere
     obj.display()
 
 if __name__ == "__main__":

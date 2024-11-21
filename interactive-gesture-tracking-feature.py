@@ -243,8 +243,8 @@ def display_value():
                  zoom = min(10, zoom + 2)  
                  prediction = None          
             elif prediction == 'Resting':
-                prediction = None
-            elif prediction == 'Rotating':
+                prediction = 'Rotating'
+            elif prediction == 'Rotating' or prediction =='Resting':
                 for x in range(6):
                     rotation_x += 0.001 
             elif prediction == 'Pointing-With-Hand-Raised':
@@ -253,11 +253,14 @@ def display_value():
             elif prediction == 'Catching-Hands-Up':
                 for x in range(6):
                     rotation_z -= 0.001 
-            elif prediction == 'Pointing':
+            elif prediction == 'Catching':
                     #zoom = max(5, zoom - 2) 
                     prediction = None
             elif prediction == 'C':
                     #zoom = max(5, zoom - 2)  
+                    prediction = None
+            elif prediction == 'C':
+                    #zoom = max(20, zoom - 2)  
                     prediction = None
                     
             pygame.event.post(pygame.event.Event(PREDICTION_EVENT))

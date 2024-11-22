@@ -69,14 +69,15 @@ class Sphere:
     def create_nodes(self):
         nodes = []
         phi, theta = np.mgrid[0.0:np.pi:self.resolution*1j, 0.0:2.0*np.pi:self.resolution*1j]
-        x = self.radius * np.sin(phi) * np.cos(theta)
-        y = self.radius * np.sin(phi) * np.sin(theta)
-        z = self.radius * np.cos(phi)
+        for r in np.linspace(0, self.radius, self.resolution // 2):  # Fill the inside with nodes
+            x = r * np.sin(phi) * np.cos(theta)
+            y = r * np.sin(phi) * np.sin(theta)
+            z = r * np.cos(phi)
 
-        for i in range(phi.shape[0]):
-            for j in range(phi.shape[1]):
-                position = np.array([x[i, j], y[i, j], z[i, j]])
-                nodes.append(Node(position, color=(200, 200, 250)))  # Light blue color
+            for i in range(phi.shape[0]):
+                for j in range(phi.shape[1]):
+                    position = np.array([x[i, j], y[i, j], z[i, j]])
+                    nodes.append(Node(position, color=(200, 200, 250)))  # Light blue color
         return nodes
 
     def dissect(self):
@@ -105,8 +106,8 @@ class Sphere:
             pygame.draw.circle(screen, (100, 100, 150), (screen_x, screen_y), node.size, 0)
 
 # Sphere dimensions
-sphere_radius = 15
-sphere_resolution = 30
+sphere_radius = 5
+sphere_resolution = 25
 sphere = Sphere(sphere_radius, sphere_resolution)
 
 # Rotation angles, zoom level, and flags

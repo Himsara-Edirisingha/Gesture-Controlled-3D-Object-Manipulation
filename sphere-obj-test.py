@@ -90,10 +90,23 @@ class Sphere:
             screen_x, screen_y, size = node.draw(screen, zoom, offset_x, offset_y, rotation_matrices, dissection_mode, dissected)
             if dissection_mode and node.check_hover(mouse_x, mouse_y, screen_x, screen_y):
                 node.isOnDissectionPath = True
+        if dissected:
+            self.fill_inside(screen, zoom, offset_x, offset_y, rotation_matrices)
+
+    def fill_inside(self, screen, zoom, offset_x, offset_y, rotation_matrices):
+        sorted_nodes = sorted(self.nodes, key=lambda node: node.position.dot(rotation_matrices[2])[2], reverse=True)
+        for node in sorted_nodes:
+            rotated_position = node.position.dot(rotation_matrices[0]).dot(rotation_matrices[1]).dot(rotation_matrices[2])
+            projected_position = rotated_position[:2] * zoom
+
+            screen_x = int(projected_position[0] + offset_x)
+            screen_y = int(projected_position[1] + offset_y)
+
+            pygame.draw.circle(screen, (100, 100, 150), (screen_x, screen_y), node.size, 0)
 
 # Sphere dimensions
-sphere_radius = 7
-sphere_resolution = 20
+sphere_radius = 15
+sphere_resolution = 30
 sphere = Sphere(sphere_radius, sphere_resolution)
 
 # Rotation angles, zoom level, and flags
